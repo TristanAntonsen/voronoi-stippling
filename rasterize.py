@@ -26,15 +26,17 @@ def Sort_Vertices(polygon):
         numerator = np.dot(vA,vB)
         denominator = np.linalg.norm(vA) * np.linalg.norm(vB)
         theta = np.arccos(numerator / denominator)
-        if x < centroid[0] and y < centroid[1]:
-            theta = -theta
-        elif x >= centroid[0] and y < centroid[1]:
-            theta = -theta
+        
+        # if y < centroid[1]:
+        #     theta = -theta
+
+        sign = np.cross(vA,vB) / np.linalg.norm(np.cross(vA,vB))
+        theta *= sign[2]
 
         angles.append(theta)
 
-    sorted_verts = np.array([x for _, x in sorted(zip(angles, polygon))])
 
+    sorted_verts = np.array([x for _, x in sorted(zip(angles, polygon))])
 
     return sorted_verts
 
@@ -85,3 +87,11 @@ def Rasterize_Polygon(polygon):
                     
     return points
 
+def Calculate_Angle(u,v):
+
+    numerator = np.dot(u,v)
+    denominator = np.linalg.norm(u) * np.linalg.norm(v)
+
+    theta = np.arccos(numerator / denominator)
+
+    return theta
