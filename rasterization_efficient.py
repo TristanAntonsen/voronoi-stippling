@@ -101,7 +101,7 @@ def Edges(polygon):
     return edges
 
 
-scan_y = 1200
+scan_y = 500
 
 polygon_edges = Edges(polygon)
 nodes = []
@@ -119,17 +119,24 @@ for edge in polygon_edges:
         p3 = [0,scan_y]
         p4 = [image_resolution,scan_y]
         node = Line_Intersection(p1,p2,p3,p4)
-        print(edge, node)
 
         nodes.append(node)
 
+
+x1 = min(round(nodes[0][0]),round(nodes[1][0]))
+x2 = max(round(nodes[0][0]),round(nodes[1][0]))
+print(nodes)
+print(x1,x2)
+
+x = x1
+while x < x2:
+    center_ellipse(x,scan_y,10,'blue')
+    x += 25
+    x += 10
+
+
 for node in nodes:
     center_ellipse(node[0],node[1],20,'red')
-
-
-
-
-
 
 
 
