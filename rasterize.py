@@ -188,7 +188,7 @@ def Raster_Scanline(nodes, scan_y, raster_res, image_res):
 
     return pixels
 
-def Rasterize_Polygon(polygon, bbox, raster_res, image_res):
+def Scanline_Rasterize_Polygon(polygon, bbox, raster_res, image_res):
 
     scale_factor = image_res / raster_res
     scan_y = bbox[0][1]

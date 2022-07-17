@@ -1,7 +1,7 @@
 from turtle import width
 import numpy as np
 from PIL import Image, ImageDraw
-from rasterize import Rasterize_Polygon, Sort_Vertices, Calculate_Centroid, Edges, Raster_Scanline, Scanline_nodes
+from rasterize import Rasterize_Polygon, Scanline_Rasterize_Polygon, Sort_Vertices, Calculate_Centroid, Edges, Raster_Scanline, Scanline_nodes
 import time
 
 t0 = time.time()
@@ -51,7 +51,7 @@ def Visualize_Scanline(nodes, scan_y):
 bbox = [[0,0],[image_resolution,image_resolution]]
 raster_res = 100
 
-rastered_polygon, scale_factor = Rasterize_Polygon(sorted_polygon, bbox, raster_res, image_resolution)
+rastered_polygon, scale_factor = Scanline_Rasterize_Polygon(sorted_polygon, bbox, raster_res, image_resolution)
 
 for point in rastered_polygon:
     center_rectangle(point[0], point[1], scale_factor -2, scale_factor -2, "white")
