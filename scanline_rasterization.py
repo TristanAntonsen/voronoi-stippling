@@ -6,10 +6,10 @@ import time
 
 t0 = time.time()
 
-res = 100
+res_init = 100
 image_resolution = 2160
 offset = 0.5
-scale_factor = image_resolution / res
+scale_factor_init = image_resolution / res_init
 
 img = Image.new('RGB', (image_resolution, image_resolution))
 draw = ImageDraw.Draw(img)
@@ -36,7 +36,7 @@ def Outline_Poly(polygon,color,width):
 
 
 polygon = np.array([[15,10],[75,20],[80,40],[70,80],[50,90],[10,50]])
-polygon = [p * scale_factor for p in polygon]
+polygon = [p * scale_factor_init for p in polygon]
 
 sorted_polygon = Sort_Vertices(polygon)
 
@@ -100,8 +100,6 @@ def Edges(polygon):
     
     return edges
 
-scan_y = 500
-
 
 def Scanline_nodes(polygon,scan_y):
 
@@ -133,43 +131,33 @@ def Visualize_Scanline(nodes, scan_y):
     x1 = min(round(nodes[0][0]),round(nodes[1][0]))
     x2 = max(round(nodes[0][0]),round(nodes[1][0]))
     x = x1
-    draw.line((x1,scan_y,x2,scan_y),fill='white',width=round(scan_res / 2))
+    draw.line((x1,scan_y,x2,scan_y),fill='white',width=10)
 
-scan_res = 55
+
+def Raster_Scanline(nodes, scan_y, raster_res, image_res):
+    scale_factor = image_res / raster_res
+    x1 = min(nodes[0][0],round(nodes[1][0]))
+    x2 = max(nodes[0][0],round(nodes[1][0]))
+
+    raster_y = round(scan_y / scale_factor) * scale_factor
+    raster_x = round(x1 / scale_factor) * scale_factor
+
+    while raster_x < x2:
+        # center_ellipse(raster_x, raster_y, scale_factor / 2, "white")
+        center_rectangle(raster_x, raster_y, scale_factor -2, scale_factor -2, "white")
+        raster_x += scale_factor
+
+
+raster_res = 100
+scale_factor = image_resolution / raster_res
 scan_y = 0
 while scan_y < image_resolution:
     nodes = Scanline_nodes(polygon,scan_y)
     if nodes:
-        Visualize_Scanline(nodes, scan_y)
-    scan_y += scan_res
-
-
+        # Visualize_Scanline(nodes, scan_y)
+        Raster_Scanline(nodes, scan_y, raster_res, image_resolution)
+    scan_y += scale_factor
 # for node in nodes:
 #     center_ellipse(node[0],node[1],20,'red')
 
-
-
-
-
-
-
-
-
-# p1 = [c * scale_factor for c in [50,90]]
-# p2 = [c * scale_factor for c in [10,50]]
-
-# # p1 = [0,scan_y]
-# # p2 = [image_resolution,scan_y]
-# p3 = [0,scan_y]
-# p4 = [image_resolution,scan_y]
-
-# p_x, p_y = Line_Intersection(p1,p2,p3,p4)
-
-# draw.line((p1[0],p1[1],p2[0],p2[1]),fill='white',width=8)
-
-# draw.line((p3[0],p3[1],p4[0],p4[1]),fill='white',width=8)
-
-# center_ellipse(p_x,p_y,20,'pink')
-# center_ellipse(p1[0],p1[1],20,'green')
-# center_ellipse(p2[0],p2[1],20,'green')
 img.save('raster2.png')
