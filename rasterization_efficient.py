@@ -36,11 +36,10 @@ def Outline_Poly(polygon,color,width):
 
 
 polygon = np.array([[15,10],[75,20],[80,40],[70,80],[50,90],[10,50]])
-
+polygon = [p * scale_factor for p in polygon]
 
 sorted_polygon = Sort_Vertices(polygon)
 
-rasterized = Rasterize_Polygon(sorted_polygon)
 
 
 # for point in rasterized:
@@ -50,9 +49,9 @@ rasterized = Rasterize_Polygon(sorted_polygon)
     # center_rectangle((x + 0.5), (y + 0.5), scale_factor / 2, scale_factor / 2, 'pink')
     # center_ellipse((x + 0.5), (y + 0.5), scale_factor / 2, 'pink')
     
-Outline_Poly([p * scale_factor for p in sorted_polygon],'rgb(255,255,255)', 3)
+Outline_Poly(sorted_polygon,'rgb(255,255,255)', 3)
 
-for p in [p * scale_factor for p in sorted_polygon]:
+for p in sorted_polygon:
     center_ellipse(p[0],p[1],10,'white')
 
 
@@ -84,18 +83,74 @@ def Line_Intersection(p1, p2, p3, p4):
 
     return (p_x, p_y)
 
-scan_y = 400
 
-p1 = [0,scan_y]
-p2 = [image_resolution,scan_y]
-p3 = [0,0]
-p4 = [image_resolution * .8,image_resolution]
 
-p_x, p_y = Line_Intersection(p1,p2,p3,p4)
+def Edges(polygon):
+    edges = []
+    for i, point in enumerate(polygon):
 
-draw.line((p1[0],p1[1],p2[0],p2[1]),fill='white',width=8)
+        k = i + 1
+        if k == len(polygon):
+            k = 0
+        point2 = polygon[k]
 
-draw.line((p3[0],p3[1],p4[0],p4[1]),fill='white',width=8)
+        edge = [point, point2]
 
-center_ellipse(p_x,p_y,20,'red')
+        edges.append(edge)
+    
+    return edges
+
+
+scan_y = 1200
+
+polygon_edges = Edges(polygon)
+nodes = []
+for edge in polygon_edges:
+    edge = list(edge)
+    p1y = edge[0][1]
+    p2y = edge[1][1]
+
+    if p1y < scan_y and p2y >= scan_y or p1y >= scan_y and p2y < scan_y:
+        p1x = edge[0][0]
+        p2x = edge[1][0]
+
+        p1 = [p1x,p1y]
+        p2 = [p2x,p2y]
+        p3 = [0,scan_y]
+        p4 = [image_resolution,scan_y]
+        node = Line_Intersection(p1,p2,p3,p4)
+        print(edge, node)
+
+        nodes.append(node)
+
+for node in nodes:
+    center_ellipse(node[0],node[1],20,'red')
+
+
+
+
+
+
+
+
+
+
+
+# p1 = [c * scale_factor for c in [50,90]]
+# p2 = [c * scale_factor for c in [10,50]]
+
+# # p1 = [0,scan_y]
+# # p2 = [image_resolution,scan_y]
+# p3 = [0,scan_y]
+# p4 = [image_resolution,scan_y]
+
+# p_x, p_y = Line_Intersection(p1,p2,p3,p4)
+
+# draw.line((p1[0],p1[1],p2[0],p2[1]),fill='white',width=8)
+
+# draw.line((p3[0],p3[1],p4[0],p4[1]),fill='white',width=8)
+
+# center_ellipse(p_x,p_y,20,'pink')
+# center_ellipse(p1[0],p1[1],20,'green')
+# center_ellipse(p2[0],p2[1],20,'green')
 img.save('raster2.png')
