@@ -142,22 +142,32 @@ def Raster_Scanline(nodes, scan_y, raster_res, image_res):
     raster_y = round(scan_y / scale_factor) * scale_factor
     raster_x = round(x1 / scale_factor) * scale_factor
 
+    pixels = []
+
     while raster_x < x2:
-        # center_ellipse(raster_x, raster_y, scale_factor / 2, "white")
-        center_rectangle(raster_x, raster_y, scale_factor -2, scale_factor -2, "white")
+        pixels.append([raster_x,raster_y])
         raster_x += scale_factor
+    return pixels
 
+def Rasterize_Polygon(polygon, bbox, raster_res, image_res):
 
+    scale_factor = image_res / raster_res
+    scan_y = bbox[0][1]
+    pixels = []
+    while scan_y < bbox[1][1]:
+        nodes = Scanline_nodes(polygon,scan_y)
+        if nodes:
+            pixels += Raster_Scanline(nodes, scan_y, raster_res, image_resolution)
+        scan_y += scale_factor
+    return pixels, scale_factor
+
+bbox = [[0,0],[image_resolution,image_resolution]]
 raster_res = 100
-scale_factor = image_resolution / raster_res
-scan_y = 0
-while scan_y < image_resolution:
-    nodes = Scanline_nodes(polygon,scan_y)
-    if nodes:
-        # Visualize_Scanline(nodes, scan_y)
-        Raster_Scanline(nodes, scan_y, raster_res, image_resolution)
-    scan_y += scale_factor
-# for node in nodes:
-#     center_ellipse(node[0],node[1],20,'red')
+
+rastered_polygon, scale_factor = Rasterize_Polygon(sorted_polygon, bbox, raster_res, image_resolution)
+
+for point in rastered_polygon:
+    center_rectangle(point[0], point[1], scale_factor -2, scale_factor -2, "white")
+
 
 img.save('raster2.png')
