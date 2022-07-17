@@ -49,10 +49,10 @@ sorted_polygon = Sort_Vertices(polygon)
     # center_rectangle((x + 0.5), (y + 0.5), scale_factor / 2, scale_factor / 2, 'pink')
     # center_ellipse((x + 0.5), (y + 0.5), scale_factor / 2, 'pink')
     
-Outline_Poly(sorted_polygon,'rgb(255,255,255)', 3)
+# Outline_Poly(sorted_polygon,'rgb(255,255,255)', 3)
 
-for p in sorted_polygon:
-    center_ellipse(p[0],p[1],10,'white')
+# for p in sorted_polygon:
+#     center_ellipse(p[0],p[1],10,'white')
 
 
 
@@ -100,43 +100,55 @@ def Edges(polygon):
     
     return edges
 
-
 scan_y = 500
 
-polygon_edges = Edges(polygon)
-nodes = []
-for edge in polygon_edges:
-    edge = list(edge)
-    p1y = edge[0][1]
-    p2y = edge[1][1]
 
-    if p1y < scan_y and p2y >= scan_y or p1y >= scan_y and p2y < scan_y:
-        p1x = edge[0][0]
-        p2x = edge[1][0]
+def Scanline_nodes(polygon,scan_y):
 
-        p1 = [p1x,p1y]
-        p2 = [p2x,p2y]
-        p3 = [0,scan_y]
-        p4 = [image_resolution,scan_y]
-        node = Line_Intersection(p1,p2,p3,p4)
+    polygon_edges = Edges(polygon)
+    nodes = []
+    for edge in polygon_edges:
+        edge = list(edge)
+        p1y = edge[0][1]
+        p2y = edge[1][1]
 
-        nodes.append(node)
+        if p1y < scan_y and p2y >= scan_y or p1y >= scan_y and p2y < scan_y:
+            p1x = edge[0][0]
+            p2x = edge[1][0]
+
+            p1 = [p1x,p1y]
+            p2 = [p2x,p2y]
+            p3 = [0,scan_y]
+            p4 = [image_resolution,scan_y]
+            node = Line_Intersection(p1,p2,p3,p4)
+
+            nodes.append(node)
+
+    if len(nodes) < 1:
+        return False
+    else:
+        return nodes
+
+def Visualize_Scanline(nodes, scan_y):
+    x1 = min(round(nodes[0][0]),round(nodes[1][0]))
+    x2 = max(round(nodes[0][0]),round(nodes[1][0]))
+    x = x1
+    draw.line((x1,scan_y,x2,scan_y),fill='white',width=round(scan_res / 2))
+
+scan_res = 55
+scan_y = 0
+while scan_y < image_resolution:
+    nodes = Scanline_nodes(polygon,scan_y)
+    if nodes:
+        Visualize_Scanline(nodes, scan_y)
+    scan_y += scan_res
 
 
-x1 = min(round(nodes[0][0]),round(nodes[1][0]))
-x2 = max(round(nodes[0][0]),round(nodes[1][0]))
-print(nodes)
-print(x1,x2)
-
-x = x1
-while x < x2:
-    center_ellipse(x,scan_y,10,'blue')
-    x += 25
-    x += 10
+# for node in nodes:
+#     center_ellipse(node[0],node[1],20,'red')
 
 
-for node in nodes:
-    center_ellipse(node[0],node[1],20,'red')
+
 
 
 
