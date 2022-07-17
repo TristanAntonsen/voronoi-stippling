@@ -74,27 +74,29 @@ def Calculate_Angle(u,v):
     return theta
 
 ##### Brute force rasterization #####
-def Rasterize_Polygon(polygon):
-    op_count = 0
-    bbox = Bounding_Box(polygon)
+def Rasterize_Polygon(polygon, bbox, raster_res, image_res):
+    scale_factor = image_res / raster_res
     points = []
-    for x in range(*bbox[0]):
-        for y in range(*bbox[1]):
-                state = True
-                vertex_count = len(polygon)
 
-                for i in range(vertex_count):
-                    v0 = i
-                    v1 = i + 1
-                    if v1 == vertex_count:
-                        v1 = 0
-                    edge_state = Edge_Function(polygon[v0],polygon[v1],[x,y])
-                    state = state and edge_state
-                    op_count += 1
-                
-                ## If on positive side of all lines
-                if state:
-                    points.append([x,y])
+    x_range = [c * scale_factor for c in range(raster_res)]
+    y_range = [c * scale_factor for c in range(raster_res)]
+
+    for x in x_range:
+        for y in y_range:
+            state = True
+            vertex_count = len(polygon)
+
+            for i in range(vertex_count):
+                v0 = i
+                v1 = i + 1
+                if v1 == vertex_count:
+                    v1 = 0
+                edge_state = Edge_Function(polygon[v0],polygon[v1],[x,y])
+                state = state and edge_state
+            
+            ## If on positive side of all lines
+            if state:
+                points.append([x,y])
                     
     return points
 
