@@ -11,6 +11,16 @@ def Calculate_Centroid(polygon):
 
     return [x,y]
 
+def Raster_Centroid(region):
+    cx = 0
+    cy = 0
+    for pixel in region:
+        cx += pixel[0] # SHOULD BE + X
+        cy += pixel[1] # SHOULD BE + Y
+    cx /= len(region)
+    cy /= len(region)
+    return [cx, cy]
+
 def Sort_Vertices(polygon):
     angles = []
     centroid = Calculate_Centroid(polygon)
@@ -63,6 +73,21 @@ def Bounding_Box(polygon):
     y_max = round(np.max(y_vals)) + 1 #account for
 
     return ([x_min, x_max],[y_min,y_max])
+
+def Raster_BBox(polygon):
+    x_vals = []
+    y_vals = []
+    for vert in polygon:
+        x_vals.append(vert[0])
+        y_vals.append(vert[1])
+
+    x_min = round(np.min(x_vals))
+    x_max = round(np.max(x_vals)) #account for
+    y_min = round(np.min(y_vals))
+    y_max = round(np.max(y_vals)) #account for
+
+    return ([x_min, y_min],[x_max,y_max])
+
 
 def Calculate_Angle(u,v):
 
@@ -195,10 +220,12 @@ def Scanline_Rasterize_Polygon(polygon, bbox, raster_res, image_res):
     scale_factor = image_res / raster_res
     scan_y = bbox[0][1]
     pixels = []
+    # y_inc = (bbox[1][1] - bbox[0][1]) / 2
     while scan_y < bbox[1][1]:
         nodes = Scanline_nodes(polygon,scan_y, image_res)
         if nodes:
             pixels += Raster_Scanline(nodes, scan_y, raster_res, image_res)
         scan_y += scale_factor
+        # scan_y += y_inc
 
-    return pixels, scale_factor
+    return pixels
