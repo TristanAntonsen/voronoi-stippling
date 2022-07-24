@@ -8,7 +8,7 @@ import time
 
 t0 = time.time()
 
-res = 200
+res = 100
 image_resolution = 2160
 offset = 0.5
 scale_factor = image_resolution / res
@@ -42,7 +42,7 @@ polygon = np.array([[15,10],[75,20],[80,40],[70,80],[50,90],[10,50]])
 
 sorted_polygon = Sort_Vertices(polygon)
 
-rasterized = Rasterize_Polygon(sorted_polygon)
+# rasterized = Rasterize_Polygon(sorted_polygon)
 
 
 # for point in rasterized:
@@ -93,19 +93,20 @@ for region in vor.regions:
 
     polygons.append(sorted_poly)
 
+
 for poly in polygons:
     g = round(np.random.rand() * 200) + 55
     sorted_poly = Sort_Vertices(poly)
 
-    raster_poly = Rasterize_Polygon(sorted_poly) 
-
+    raster_poly = Rasterize_Polygon(sorted_poly)
     for point in raster_poly:
         x = point[0] * scale_factor
         y = point[1] * scale_factor
 
         # center_rectangle((x + 0.5), (y + 0.5), scale_factor / 2, scale_factor / 2, 'pink')
-        center_ellipse((x + 0.5), (y + 0.5), scale_factor / 2, f'rgb({g},{g},{g})')
-    Outline_Poly([p * scale_factor for p in sorted_poly],'rgb(255,255,255)', 3)
+        # center_ellipse((x + 0.5), (y + 0.5), scale_factor / 2, f'rgb({g},{g},{g})')
+        center_rectangle((x + 0.5), (y + 0.5),scale_factor, scale_factor, f'rgb({g},{g},{g})')
+    # Outline_Poly([p * scale_factor for p in sorted_poly],'rgb(255,255,255)', 3)
 
 
 print(polygons)
