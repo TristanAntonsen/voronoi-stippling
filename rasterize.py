@@ -74,7 +74,7 @@ def Bounding_Box(polygon):
 
     return ([x_min, x_max],[y_min,y_max])
 
-def Raster_BBox(polygon):
+def Raster_BBox(polygon, image_res):
     x_vals = []
     y_vals = []
     for vert in polygon:
@@ -86,6 +86,15 @@ def Raster_BBox(polygon):
     y_min = round(np.min(y_vals))
     y_max = round(np.max(y_vals)) #account for
 
+    if x_min < 0:
+        x_min = 0
+    if y_min < 0:
+        y_min = 0
+    if x_max >= image_res:
+        x_max = image_res - 1
+    if y_max >= image_res:
+        y_max = image_res - 1
+        
     return ([x_min, y_min],[x_max,y_max])
 
 
@@ -171,6 +180,8 @@ def Edges(polygon):
     
     return edges
 
+def Clamp(n, range):
+    return max(range[0], min(range[1], n))
 
 def Scanline_nodes(polygon,scan_y, image_res):
 
@@ -185,12 +196,17 @@ def Scanline_nodes(polygon,scan_y, image_res):
             p1x = edge[0][0]
             p2x = edge[1][0]
 
+            if p1x < 0:
+                p1x = 0
+            if p1x >= image_res:
+                p1x = image_res - 1
+
             p1 = [p1x,p1y]
             p2 = [p2x,p2y]
             p3 = [0,scan_y]
             p4 = [image_res,scan_y]
             node = Line_Intersection(p1,p2,p3,p4)
-
+            node = [Clamp(node[0],[0,image_res]),Clamp(node[1],[0,image_res])]
             nodes.append(node)
 
     if len(nodes) < 1:
@@ -199,33 +215,32 @@ def Scanline_nodes(polygon,scan_y, image_res):
         return nodes
 
 
-def Raster_Scanline(nodes, scan_y, raster_res, image_res):
-    scale_factor = image_res / raster_res
-    x1 = min(nodes[0][0],round(nodes[1][0]))
-    x2 = max(nodes[0][0],round(nodes[1][0]))
+def Raster_Scanline(nodes, scan_y):
 
-    raster_y = round(scan_y / scale_factor) * scale_factor
-    raster_x = round(x1 / scale_factor) * scale_factor
+    x1 = min(nodes[0][0],nodes[1][0])
+    x2 = max(nodes[0][0],nodes[1][0])
+
+    raster_y = scan_y
+    raster_x = x1
 
     pixels = []
 
     while raster_x < x2:
         pixels.append([raster_x,raster_y])
-        raster_x += scale_factor
+        raster_x += 1
 
     return pixels
 
-def Scanline_Rasterize_Polygon(polygon, bbox, raster_res, image_res):
+def Scanline_Rasterize_Polygon(polygon, bbox, image_res):
 
-    scale_factor = image_res / raster_res
     scan_y = bbox[0][1]
     pixels = []
     # y_inc = (bbox[1][1] - bbox[0][1]) / 2
     while scan_y < bbox[1][1]:
         nodes = Scanline_nodes(polygon,scan_y, image_res)
         if nodes:
-            pixels += Raster_Scanline(nodes, scan_y, raster_res, image_res)
-        scan_y += scale_factor
+            pixels += Raster_Scanline(nodes, scan_y)
+        scan_y += 1
         # scan_y += y_inc
 
     return pixels
