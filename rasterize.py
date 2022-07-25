@@ -226,7 +226,7 @@ def Raster_Scanline(nodes, scan_y):
     pixels = []
 
     while raster_x < x2:
-        pixels.append([raster_x,raster_y])
+        pixels.append([int(raster_x),int(raster_y)])
         raster_x += 1
 
     return pixels
@@ -244,3 +244,39 @@ def Scanline_Rasterize_Polygon(polygon, bbox, image_res):
         # scan_y += y_inc
 
     return pixels
+
+def Weighted_Raster_Centroid(pixels, image_array):
+    cx = 0
+    cy = 0
+    total_weight = 0
+    pixel_count = len(pixels)
+    increment_size = round(pixel_count / 500)
+    if increment_size < 1:
+        increment_size = 1
+    i = 0
+    while i < pixel_count:
+        pixel = pixels[i]
+        sample_x = pixel[1]
+        sample_y = pixel[0]
+        # sampled_value = image.getpixel((sample_x,sample_y))
+        sampled_value = image_array[sample_x][sample_y]
+
+        # weight = 1 - np.mean(sampled_value) / 255
+        weight = 1 - sampled_value
+
+
+        total_weight += weight
+        
+        cx += pixel[0] * weight
+        cy += pixel[1] * weight
+
+        i += increment_size
+        # i += 1
+    
+    if total_weight == 0:
+        total_weight = pixel_count
+
+    cx /= total_weight
+    cy /= total_weight
+    
+    return [cx, cy]
