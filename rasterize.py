@@ -217,8 +217,8 @@ def Scanline_nodes(polygon,scan_y, image_res):
 
 def Raster_Scanline(nodes, scan_y):
 
-    x1 = min(nodes[0][0],nodes[1][0])
-    x2 = max(nodes[0][0],nodes[1][0])
+    x1 = (min(nodes[0][0],nodes[1][0]))
+    x2 = (max(nodes[0][0],nodes[1][0]))
 
     raster_y = scan_y
     raster_x = x1
@@ -226,7 +226,8 @@ def Raster_Scanline(nodes, scan_y):
     pixels = []
 
     while raster_x < x2:
-        pixels.append([int(raster_x),int(raster_y)])
+        # pixels.append([int(raster_x),int(raster_y)])
+        pixels.append([raster_x,raster_y])
         raster_x += 1
 
     return pixels
@@ -256,8 +257,8 @@ def Weighted_Raster_Centroid(pixels, image_array):
     i = 0
     while i < pixel_count:
         pixel = pixels[i]
-        sample_x = pixel[1]
-        sample_y = pixel[0]
+        sample_x = int(pixel[1])
+        sample_y = int(np.floor(pixel[0]))
         # sampled_value = image.getpixel((sample_x,sample_y))
         sampled_value = image_array[sample_x][sample_y]
 
