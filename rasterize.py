@@ -183,6 +183,15 @@ def Edges(polygon):
 def Clamp(n, range):
     return max(range[0], min(range[1], n))
 
+def Create_Seed(res, threshold, image):
+    while True:
+        rand_x = np.random.rand() * res
+        rand_y = np.random.rand() * res
+        sampled_value = image.getpixel((rand_x,rand_y))
+        if np.mean(sampled_value) < threshold:
+            seed = np.array([rand_x,rand_y])
+            return seed
+
 def Scanline_nodes(polygon,scan_y, image_res):
 
     polygon_edges = Edges(polygon)
@@ -192,6 +201,7 @@ def Scanline_nodes(polygon,scan_y, image_res):
         p1y = edge[0][1]
         p2y = edge[1][1]
 
+        ## If line crosses scanline
         if p1y < scan_y and p2y >= scan_y or p1y >= scan_y and p2y < scan_y:
             p1x = edge[0][0]
             p2x = edge[1][0]
@@ -221,7 +231,7 @@ def Raster_Scanline(nodes, scan_y):
     x2 = (max(nodes[0][0],nodes[1][0]))
 
     raster_y = scan_y
-    raster_x = x1
+    raster_x = x1 + 0.5 ## a little unclear of why this works
 
     pixels = []
 
@@ -261,23 +271,30 @@ def Weighted_Raster_Centroid(pixels, image_array):
         sample_y = int(np.floor(pixel[0]))
         # sampled_value = image.getpixel((sample_x,sample_y))
         sampled_value = image_array[sample_x][sample_y]
-
+        # if sampled_value > 0.9:
+        #     sampled_value = 1
         # weight = 1 - np.mean(sampled_value) / 255
         weight = 1 - sampled_value
-
+        # weight = 1
 
         total_weight += weight
         
         cx += pixel[0] * weight
         cy += pixel[1] * weight
 
-        i += increment_size
-        # i += 1
+        # i += increment_size
+        i += 1
     
+    # if pixel_count == 0:
+    #     return False
     if total_weight == 0:
         total_weight = pixel_count
 
+    if pixel_count == 0 or cx == 0 or cy == 0:
+        return False
+
     cx /= total_weight
     cy /= total_weight
-    
+
+
     return [cx, cy]
