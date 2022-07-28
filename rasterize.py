@@ -1,26 +1,5 @@
 import numpy as np
 
-def Calculate_Centroid(polygon):
-    x = 0
-    y = 0
-    for vert in polygon:
-        x += vert[0]
-        y += vert[1]
-    x /= len(polygon)
-    y /= len(polygon)
-
-    return [x,y]
-
-def Raster_Centroid(region):
-    cx = 0
-    cy = 0
-    for pixel in region:
-        cx += pixel[0] # SHOULD BE + X
-        cy += pixel[1] # SHOULD BE + Y
-    cx /= len(region)
-    cy /= len(region)
-    return [cx, cy]
-
 def Sort_Vertices(polygon):
     angles = []
     centroid = Calculate_Centroid(polygon)
@@ -51,29 +30,6 @@ def Sort_Vertices(polygon):
     return sorted_verts
 
 
-def Edge_Function(_v0, _v1, _p):
-    #Assumes clockwise order
-    result = (_p[0] - _v0[0]) * (_v1[1] - _v0[1]) - (_p[1] - _v0[1]) * (_v1[0] - _v0[0])
-    
-    if result <= 0:
-        return True
-    else:
-        return False
-
-def Bounding_Box(polygon):
-    x_vals = []
-    y_vals = []
-    for vert in polygon:
-        x_vals.append(vert[0])
-        y_vals.append(vert[1])
-
-    x_min = round(np.min(x_vals))
-    x_max = round(np.max(x_vals)) + 1 #account for
-    y_min = round(np.min(y_vals))
-    y_max = round(np.max(y_vals)) + 1 #account for
-
-    return ([x_min, x_max],[y_min,y_max])
-
 def Raster_BBox(polygon, image_res):
     x_vals = []
     y_vals = []
@@ -96,43 +52,6 @@ def Raster_BBox(polygon, image_res):
         y_max = image_res - 1
         
     return ([x_min, y_min],[x_max,y_max])
-
-
-def Calculate_Angle(u,v):
-
-    numerator = np.dot(u,v)
-    denominator = np.linalg.norm(u) * np.linalg.norm(v)
-
-    theta = np.arccos(numerator / denominator)
-
-    return theta
-
-##### Brute force rasterization #####
-def Rasterize_Polygon(polygon, bbox, raster_res, image_res):
-    scale_factor = image_res / raster_res
-    points = []
-
-    x_range = [c * scale_factor for c in range(raster_res)]
-    y_range = [c * scale_factor for c in range(raster_res)]
-
-    for x in x_range:
-        for y in y_range:
-            state = True
-            vertex_count = len(polygon)
-
-            for i in range(vertex_count):
-                v0 = i
-                v1 = i + 1
-                if v1 == vertex_count:
-                    v1 = 0
-                edge_state = Edge_Function(polygon[v0],polygon[v1],[x,y])
-                state = state and edge_state
-            
-            ## If on positive side of all lines
-            if state:
-                points.append([x,y])
-                    
-    return points
 
 ##### Scanline rasterization #####
 
@@ -236,7 +155,6 @@ def Raster_Scanline(nodes, scan_y):
     pixels = []
 
     while raster_x < x2:
-        # pixels.append([int(raster_x),int(raster_y)])
         pixels.append([raster_x,raster_y])
         raster_x += 1
 
@@ -246,13 +164,11 @@ def Scanline_Rasterize_Polygon(polygon, bbox, image_res):
 
     scan_y = bbox[0][1]
     pixels = []
-    # y_inc = (bbox[1][1] - bbox[0][1]) / 2
     while scan_y < bbox[1][1]:
         nodes = Scanline_nodes(polygon,scan_y, image_res)
         if nodes:
             pixels += Raster_Scanline(nodes, scan_y)
         scan_y += 1
-        # scan_y += y_inc
 
     return pixels
 
@@ -269,13 +185,9 @@ def Weighted_Raster_Centroid(pixels, image_array):
         pixel = pixels[i]
         sample_x = int(pixel[1])
         sample_y = int(np.floor(pixel[0]))
-        # sampled_value = image.getpixel((sample_x,sample_y))
-        # sampled_value = image_array[sample_x][sample_y]
-        # if sampled_value > 0.9:
-        #     sampled_value = 1
-        # weight = 1 - np.mean(sampled_value) / 255
-        # weight = 1 - sampled_value
-        weight = 1
+        sampled_value = image_array[sample_x][sample_y]
+
+        weight = 1 - sampled_value
 
         total_weight += weight
         
@@ -285,8 +197,7 @@ def Weighted_Raster_Centroid(pixels, image_array):
         # i += increment_size
         i += 1
     
-    # if pixel_count == 0:
-    #     return False
+
     if total_weight == 0:
         total_weight = pixel_count
 
