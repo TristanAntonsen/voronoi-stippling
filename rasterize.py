@@ -270,12 +270,12 @@ def Weighted_Raster_Centroid(pixels, image_array):
         sample_x = int(pixel[1])
         sample_y = int(np.floor(pixel[0]))
         # sampled_value = image.getpixel((sample_x,sample_y))
-        sampled_value = image_array[sample_x][sample_y]
+        # sampled_value = image_array[sample_x][sample_y]
         # if sampled_value > 0.9:
         #     sampled_value = 1
         # weight = 1 - np.mean(sampled_value) / 255
-        weight = 1 - sampled_value
-        # weight = 1
+        # weight = 1 - sampled_value
+        weight = 1
 
         total_weight += weight
         
@@ -298,3 +298,5 @@ def Weighted_Raster_Centroid(pixels, image_array):
 
 
     return [cx, cy]
+
+    
