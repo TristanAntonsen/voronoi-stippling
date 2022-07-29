@@ -6,11 +6,11 @@ from geometry import Sort_Vertices
 from rasterize import Scanline_Rasterize_Polygon, Raster_BBox, Weighted_Raster_Centroid
 
 class Stippler:
-    def __init__(self, image_path):
+    def __init__(self, image_path, **kwargs):
         
         self.weight_image = Image.open(image_path)
         self.image_resolution = self.weight_image.size[0]
-        self._Pixel_Array()
+        self._Pixel_Array(kwargs['size'],kwargs['power'])
 
     def Create_Seeds(self, point_count, threshold):
         res = self.image_resolution
@@ -28,14 +28,20 @@ class Stippler:
 
         self.seeds = seeds
 
-    def _Pixel_Array(self):
-        image_array = np.array(self.weight_image)
+    def _Pixel_Array(self, size, power):
+        if size != self.image_resolution:
+            weight_image = self.weight_image.resize((size, size)) #resized
+            self.image_resolution = size
+        else:
+            weight_image = self.weight_image
+            
+        image_array = np.array(weight_image)
         weight_array = np.zeros([self.image_resolution,self.image_resolution])
-
         for x in range(self.image_resolution):
             for y in range(self.image_resolution):
                 pixel = image_array[x,y]
-                weight_array[x,y] = (np.mean(pixel) / 255)
+                weight = np.mean(pixel) / 255
+                weight_array[x,y] = weight ** power
         
         self.weight_array = weight_array
         
@@ -97,7 +103,7 @@ class Stippler:
 
         return new_seeds
     
-    def Relax(self, iterations):
+    def Relax(self, iterations, **kwargs):
         seeds = self.seeds
         for i in range(iterations):
 
@@ -105,20 +111,23 @@ class Stippler:
             seeds = new_seeds
             print(f"Iteration {i}")
 
+            if kwargs['save_iterations'] == True:
+                self.Save_Result(f'sequence/iteration_{i}.jpg', seeds)
+
         self.relaxed_seeds = new_seeds
     
-    def Save_Result(self, path):
+    def Save_Result(self, path, seeds):
         img = Image.new('RGB', (self.image_resolution, self.image_resolution))
         draw = ImageDraw.Draw(img)
         draw.rectangle([0,0,self.image_resolution, self.image_resolution],fill='white')
-        r = 5
-        for seed in self.relaxed_seeds:
+        r = 2
+        for seed in seeds:
             draw.ellipse([seed[0] - r, seed[1] - r, seed[0] + r, seed[1] + r],fill='black')
         img.save(path)
 
 if __name__ == "__main__":
-    image_path = 'sampling/test_im_500.png'
-    stippler = Stippler(image_path)
-    stippler.Create_Seeds(100,150)
-    stippler.Relax(30)
-    stippler.Save_Result(f'sequence/stipple_result.png')
+    image_path = 'sampling/tristan1080.jpg'
+    stippler = Stippler(image_path, size=500, power=2)
+    stippler.Create_Seeds(1000,150)
+    stippler.Relax(10, save_iterations=True)
+    stippler.Save_Result(f'sequence/stipple_result.png', stippler.relaxed_seeds)
