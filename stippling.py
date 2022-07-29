@@ -26,7 +26,7 @@ class Stippler:
             seed = self._Create_Seed(self.image_resolution, threshold, self.weight_image)
             seeds.append(seed)
             n += 1
-
+        self.Save_Result('sequence/seeds.png',seeds)
         self.seeds = seeds
 
     def _Pixel_Array(self, power):
