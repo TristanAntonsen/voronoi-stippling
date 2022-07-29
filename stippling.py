@@ -4,13 +4,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from geometry import Sort_Vertices
 from rasterize import Scanline_Rasterize_Polygon, Raster_BBox, Weighted_Raster_Centroid
+import time
 
 class Stippler:
     def __init__(self, image_path, **kwargs):
         
         self.weight_image = Image.open(image_path)
         self.image_resolution = self.weight_image.size[0]
-        self._Pixel_Array(kwargs['size'],kwargs['power'])
+        self._Pixel_Array(kwargs['power'])
 
     def Create_Seeds(self, point_count, threshold):
         res = self.image_resolution
@@ -28,14 +29,9 @@ class Stippler:
 
         self.seeds = seeds
 
-    def _Pixel_Array(self, size, power):
-        if size != self.image_resolution:
-            weight_image = self.weight_image.resize((size, size)) #resized
-            self.image_resolution = size
-        else:
-            weight_image = self.weight_image
+    def _Pixel_Array(self, power):
             
-        image_array = np.array(weight_image)
+        image_array = np.array(self.weight_image)
         weight_array = np.zeros([self.image_resolution,self.image_resolution])
         for x in range(self.image_resolution):
             for y in range(self.image_resolution):
@@ -117,17 +113,24 @@ class Stippler:
         self.relaxed_seeds = new_seeds
     
     def Save_Result(self, path, seeds):
-        img = Image.new('RGB', (self.image_resolution, self.image_resolution))
+        scale_factor = 2
+        img = Image.new('RGB', (self.image_resolution *scale_factor, self.image_resolution *scale_factor))
         draw = ImageDraw.Draw(img)
-        draw.rectangle([0,0,self.image_resolution, self.image_resolution],fill='white')
+        draw.rectangle([0,0,self.image_resolution *scale_factor, self.image_resolution *scale_factor],fill='white')
         r = 2
         for seed in seeds:
-            draw.ellipse([seed[0] - r, seed[1] - r, seed[0] + r, seed[1] + r],fill='black')
+            x = (seed[0] + 0.5) * scale_factor
+            y = (seed[1] + 0.5) * scale_factor
+            draw.ellipse([x - r, y - r, x + r, y + r],fill='black')
         img.save(path)
 
 if __name__ == "__main__":
-    image_path = 'sampling/tristan1080.jpg'
-    stippler = Stippler(image_path, size=500, power=2)
-    stippler.Create_Seeds(1000,150)
-    stippler.Relax(10, save_iterations=True)
+    t0 = time.time()
+    image_path = 'sampling/marilyn500_2.jpg'
+    stippler = Stippler(image_path, power=2)
+    stippler.Create_Seeds(15000,150)
+    stippler.Relax(180, save_iterations=True)
+    t1 = time.time()
     stippler.Save_Result(f'sequence/stipple_result.png', stippler.relaxed_seeds)
+    elapsed = round(t1 - t0,2)
+    print(f"Elapsed time: {elapsed} seconds")
