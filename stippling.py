@@ -5,6 +5,7 @@ import numpy as np
 from geometry import Sort_Vertices
 from rasterize import Scanline_Rasterize_Polygon, Raster_BBox, Weighted_Raster_Centroid
 import time
+import voronoi_stippling as vs
 
 class Stippler:
     def __init__(self, image_path, **kwargs):
@@ -85,7 +86,8 @@ class Stippler:
 
             bbox = Raster_BBox(polygon, res)
             rastered_polygon = Scanline_Rasterize_Polygon(polygon, bbox, res)
-            centroid = Weighted_Raster_Centroid(rastered_polygon, self.weight_array)
+            # centroid = Weighted_Raster_Centroid(rastered_polygon, self.weight_array)
+            centroid = vs.weighted_raster_centroid(rastered_polygon, self.weight_array)
             if centroid:
                 if centroid[0] < 0 or centroid[0] >= res or centroid[1] < 0 or centroid[1] >= res:
                     centroids.append(self._Create_Seed(res, 100, self.weight_image))
@@ -126,9 +128,9 @@ class Stippler:
 
 if __name__ == "__main__":
     t0 = time.time()
-    image_path = 'sampling/marilyn500_2.jpg'
+    image_path = 'sampling/circle1080.jpg'
     stippler = Stippler(image_path, power=2)
-    stippler.Create_Seeds(1000,150)
+    stippler.Create_Seeds(100,10)
     stippler.Relax(10, save_iterations=False)
     t1 = time.time()
     stippler.Save_Result(f'sequence/stipple_result.png', stippler.relaxed_seeds)
