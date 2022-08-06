@@ -128,8 +128,8 @@ if __name__ == "__main__":
     t0 = time.time()
     image_path = 'sampling/marilyn500_2.jpg'
     stippler = Stippler(image_path, power=2)
-    stippler.Create_Seeds(15000,150)
-    stippler.Relax(180, save_iterations=True)
+    stippler.Create_Seeds(1000,150)
+    stippler.Relax(10, save_iterations=False)
     t1 = time.time()
     stippler.Save_Result(f'sequence/stipple_result.png', stippler.relaxed_seeds)
     elapsed = round(t1 - t0,2)
