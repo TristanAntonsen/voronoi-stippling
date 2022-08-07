@@ -1,3 +1,4 @@
+import cProfile
 from PIL import Image, ImageDraw, ImageFilter
 from scipy.spatial import Voronoi, voronoi_plot_2d
 import matplotlib.pyplot as plt
@@ -5,6 +6,7 @@ import numpy as np
 from geometry import Sort_Vertices
 from rasterize import Scanline_Rasterize_Polygon, Raster_BBox, Weighted_Raster_Centroid
 import time
+import cProfile
 
 class Stippler:
     def __init__(self, image_path, **kwargs):
@@ -129,8 +131,21 @@ if __name__ == "__main__":
     image_path = 'sampling/marilyn500_2.jpg'
     stippler = Stippler(image_path, power=2)
     stippler.Create_Seeds(1000,150)
-    stippler.Relax(10, save_iterations=False)
+    stippler.Relax(1, save_iterations=False)
+    # cProfile.run("stippler.Relax(1, save_iterations=False)", "output.dat")
     t1 = time.time()
     stippler.Save_Result(f'sequence/stipple_result.png', stippler.relaxed_seeds)
     elapsed = round(t1 - t0,2)
     print(f"Elapsed time: {elapsed} seconds")
+
+    import pstats
+    from pstats import SortKey
+
+    with open("output_time.txt", "w") as f:
+        p = pstats.Stats("output.dat",stream=f)
+        p.sort_stats("time").print_stats()
+    
+    with open("output_calls.txt", "w") as f:
+        p = pstats.Stats("output.dat",stream=f)
+        p.sort_stats("calls").print_stats()
+
